@@ -26,13 +26,99 @@ create table if not exists `Account`
     `Fullname`			varchar(50),
     `DepartmentID` 		tinyint default 0,
     `PositionID`	 	tinyint,
-    `CreateDate` 		datetime,
+    `CreateDate` 		datetime
     
-    constraint fk_dpm_id foreign key (`DepartmentID`) references `Department` (`DepartmentID`),
-    constraint fk_pst_id foreign key (`PositionID`) references `Position` (`PositionID`)
-    
+   -- constraint fk_dpm_id foreign key (`DepartmentID`) references `Department` (`DepartmentID`),
+   -- constraint fk_pst_id foreign key (`PositionID`) references `Position` (`PositionID`),
     
     );
+    
+    -- ASM 4
+    
+    -- C1. Viết lệnh để lấy ra danh sách nhân viên và thông tin phòng ban của họ
+    select `Fullname`, A.DepartmentID, D.DepartmentID,`DepartmentName`
+    from `Account` A left join `Department` D on A.DepartmentID = D.DepartmentID;
+    
+    -- C2. Viết lệnh để lấy ra thông tin các account được tạo sau ngày 20/12/2010
+    select * from `Account` where CreateDate > '2020-12-20'; 
+
+-- C3. Viết lệnh để lấy ra tất cả các developer
+ select `Fullname`, A.PositionID, P.PositionID, `PositionName`
+ from `Account` A inner join `Position` P on `PositionName` like 'Dev%';
+ 
+ -- C4. Viết lệnh để lấy ra danh sách các phòng ban có >3 nhân viên
+ select D.DepartmentID, D.DepartmentName, COUNT(*) as SoLuong
+from `Department` D join `Account` A on D.DepartmentID = A.DepartmentID
+group by D.DepartmentID
+having SoLuong > 3;
+ 
+ -- C5. Viết lệnh để lấy ra danh sách câu hỏi được sử dụng trong đề thi nhiều nhat
+ select `Content`, Q.`QuestionID`, E.`QuestionID`  from `ExamQuestion` E
+inner join `Question` Q on Q.`QuestionID` = E.`QuestionID`
+group by E.`QuestionID` 
+having count(E.`QuestionID`) = 
+ ( select 
+             CASE 
+                  WHEN max(E.`QuestionID`)
+                     THEN 'Cau dc hoi nhieu nhat' 
+                  ELSE 0 
+             END 
+ group by E.`QuestionID`
+ );
+
+-- C6. Thông kê mỗi category Question được sử dụng trong bao nhiêu Question
+SELECT cq.CategoryID, cq.CategoryName, count(q.CategoryID) FROM `CategoryQuestion` cq
+JOIN `Question` q ON cq.CategoryID = q.CategoryID
+GROUP BY q.CategoryID;
+ 
+ -- C7. Thông kê mỗi Question được sử dụng trong bao nhiêu Exam
+SELECT Q.Content, COUNT(EQ.QuestionID) AS 'SO LUONG'
+FROM Question Q
+LEFT JOIN ExamQuestion EQ ON EQ.QuestionID = Q.QuestionID
+GROUP BY Q.QuestionID
+ORDER BY EQ.ExamID ASC;
+
+-- C8. Lấy ra Question có nhiều câu trả lời nhất
+SELECT Q.`QuestionID`, Q.`Content`, count(A.`QuestionID`) FROM `Answer` A
+INNER JOIN `Question` Q ON Q.QuestionID = A.QuestionID
+GROUP BY A.`QuestionID`
+HAVING count(A.QuestionID) = (SELECT max(countQues) FROM
+(SELECT count(B.QuestionID) AS countQues FROM answer B
+GROUP BY B.QuestionID) AS countAnsw);
+
+
+-- C9. Thống kê số lượng account trong mỗi group
+
+-- C10. Tìm chức vụ có ít người nhất
+
+
+-- C11. Thống kê mỗi phòng ban có bao nhiêu dev, test, scrum master, PM
+    SELECT 
+    d.DepartmentID,
+    d.DepartmentName,
+    p.PositionName,
+    COUNT(p.PositionName) AS count_position
+FROM
+    `account` a
+        JOIN
+    department d ON a.DepartmentID = d.DepartmentID
+        JOIN
+    position p ON a.PositionID = p.PositionID
+GROUP BY d.DepartmentID , p.PositionID
+order by DepartmentID;
+
+-- C12. Lấy thông tin chi tiết của câu hỏi bao gồm: thông tin cơ bản của 
+-- question, loại câu hỏi, ai là người tạo ra câu hỏi, câu trả lời là gì, ...
+    
+-- C13. Lấy ra số lượng câu hỏi của mỗi loại tự luận hay trắc nghiệm
+  
+-- C14. Lấy ra group không có account nào 
+  
+-- C15. Lấy ra group không có account nào
+
+-- C16. Lấy ra question không có answer nào 
+    
+    
     
 drop table if exists `Group`;
 create table if not exists `Group`
@@ -154,13 +240,13 @@ VALUES ('1','Phong Ky Thuat 1'),
 ALTER TABLE `Position`
     MODIFY COLUMN `PositionName` ENUM ('Dev1', 'Dev2', 'PM', 'Leader', 'Scrum Master' , 'Test');
 
-INSERT INTO `Position`(`PositionName`)
-VALUES ('Dev2'),
-       ('Dev1'),
-       ('Test'),
-       ('PM'),
-       ('Leader'),
-       ('Scrum Master');
+INSERT INTO `Position`(`PositionID`,`PositionName`)
+VALUES ('1','Dev1'),
+       ('2','Dev2'),
+       ('3','Test'),
+       ('4','PM'),
+       ('5','Leader'),
+       ('6','Scrum Master');
 
 
 /* INSERT DATA bang Account */
@@ -178,17 +264,17 @@ VALUES ('1','maxmad1@gmai.com', 'dtm', 'Doan Thi Mo', 1, 1, '2019-12-01'),
        ('11','maxmad11@gmai.com', 'ntpl', 'Nguyen Thi Phuong Lan', 1, 3, '2020-12-01');
 
 /* INSERT DATA bang Group */
-INSERT INTO `Group`(`GroupName`, `CreatorID`, `CreateDate`)
-VALUES ('Nhom 1', '3', '2021-04-03'),
-       ('Nhom 2', '3', '2019-01-03'),
-       ('Nhom 3', '2', '2020-04-03'),
-       ('Nhom 4', '1', NOW()),
-       ('Nhom 5', '3', '2021-06-03'),
-       ('Nhom 6', '1', '2020-04-03'),
-       ('Nhom 7', '5', '2021-04-03'),
-       ('Nhom 8', '5', '2019-05-03'),
-       ('Nhom 9', '3', '2019-01-03'),
-       ('Nhom 10', '1', NOW());
+INSERT INTO `Group`(`GroupID`,`GroupName`, `CreatorID`, `CreateDate`)
+VALUES ('1','Nhom 1', '3', '2021-04-03'),
+       ('2','Nhom 2', '3', '2019-01-03'),
+       ('3','Nhom 3', '2', '2020-04-03'),
+       ('4','Nhom 4', '1', NOW()),
+       ('5','Nhom 5', '3', '2021-06-03'),
+       ('6','Nhom 6', '1', '2020-04-03'),
+       ('7','Nhom 7', '5', '2021-04-03'),
+       ('8','Nhom 8', '5', '2019-05-03'),
+       ('9','Nhom 9', '3', '2019-01-03'),
+       ('10','Nhom 10', '1', NOW());
 
 /* INSERT DATA bang GroupAccount */
 INSERT INTO `GroupAccount`(`GroupID`, `AccountID`, `JoinDate`)
@@ -211,15 +297,15 @@ VALUES ('Trac nghiem'),
        ('Tu Luan');
 
 /* INSERT DATA bang CategoryQuestion */
-INSERT INTO `CategoryQuestion` (`CategoryName`)
-VALUES ('Java'),
-       ('SQL'),
-       ('HTML'),
-       ('CSS '),
-       ('.NET'),
-       ('Python'),
-       ('Ruby'),
-       ('JavaScript');
+INSERT INTO `CategoryQuestion` (`CategoryID`,`CategoryName`)
+VALUES ('1','Java'),
+       ('2','SQL'),
+       ('3','HTML'),
+       ('4','CSS '),
+       ('5','.NET'),
+       ('6','Python'),
+       ('7','Ruby'),
+       ('8','JavaScript');
 
 
 
@@ -273,9 +359,9 @@ VALUES (1,1),
 									(2,2),
 									(2,3),
 									(2,5),
-									(3,6),
-									(3,8),
-									(3,9),
+									(3,2),
+									(3,2),
+									(3,2),
 									(4,7),
 									(5,10);
  -- End AS 2      
@@ -289,8 +375,11 @@ VALUES (1,1),
  select `DepartmentID` from `Department` where `DepartmentName` = 'Phong Sale'; 
  
   -- 3. Lay ra Account co Fullname = Max
-select Fullname, character_length(Fullname) as `ddMax` 
-from `Account` order by dodai desc;
+-- select `Account`, character_length(`Fullname`) as `ddMax` 
+-- from `Account` order by dodai desc;
+
+SELECT * FROM `Account`
+WHERE character_length(`Fullname`) = (SELECT MAX(character_length(`Fullname`)) FROM `Account` AS newTable);
 
 -- 4. Lay ra all thong tin Account co Fullname = Max thuoc DepartmentID = 3
 select * from `Account` 
@@ -321,10 +410,11 @@ where `DepartmentID` = 2;
 select `Fullname`
 from `Account`
 where `FullName` LIKE 'D%o' ;
-/* Chi ra duoc 1 ket qua trong khi da dinh 2 Fullname co Bat dau = D va ket thuc = o */
+
 
 -- 11. Xoa all Exam dc tao trc ngay 20/12/2019
-SET SQL_SAFE_UPDATES = 0; -- Tai sao them dong nay moi su dung dc Delete
+ 
+ SET SQL_SAFE_UPDATES = 0;
  delete from `Exam` where (`CreateDate` < '2019-12-20');
 /* Chua lam dc cau nay*/
 
