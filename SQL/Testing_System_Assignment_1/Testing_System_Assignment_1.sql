@@ -33,90 +33,6 @@ create table if not exists `Account`
     
     );
     
-    -- ASM 4
-    
-    -- C1. Viết lệnh để lấy ra danh sách nhân viên và thông tin phòng ban của họ
-    select `Fullname`, A.DepartmentID, D.DepartmentID,`DepartmentName`
-    from `Account` A left join `Department` D on A.DepartmentID = D.DepartmentID;
-    
-    -- C2. Viết lệnh để lấy ra thông tin các account được tạo sau ngày 20/12/2010
-    select * from `Account` where CreateDate > '2020-12-20'; 
-
--- C3. Viết lệnh để lấy ra tất cả các developer
- select `Fullname`, A.PositionID, P.PositionID, `PositionName`
- from `Account` A inner join `Position` P on `PositionName` like 'Dev%';
- 
- -- C4. Viết lệnh để lấy ra danh sách các phòng ban có >3 nhân viên
- select D.DepartmentID, D.DepartmentName, COUNT(*) as SoLuong
-from `Department` D join `Account` A on D.DepartmentID = A.DepartmentID
-group by D.DepartmentID
-having SoLuong > 3;
- 
- -- C5. Viết lệnh để lấy ra danh sách câu hỏi được sử dụng trong đề thi nhiều nhat
- select `Content`, Q.`QuestionID`, E.`QuestionID`  from `ExamQuestion` E
-inner join `Question` Q on Q.`QuestionID` = E.`QuestionID`
-group by E.`QuestionID` 
-having count(E.`QuestionID`) = 
- ( select 
-             CASE 
-                  WHEN max(E.`QuestionID`)
-                     THEN 'Cau dc hoi nhieu nhat' 
-                  ELSE 0 
-             END 
- group by E.`QuestionID`
- );
-
--- C6. Thông kê mỗi category Question được sử dụng trong bao nhiêu Question
-SELECT cq.CategoryID, cq.CategoryName, count(q.CategoryID) FROM `CategoryQuestion` cq
-JOIN `Question` q ON cq.CategoryID = q.CategoryID
-GROUP BY q.CategoryID;
- 
- -- C7. Thông kê mỗi Question được sử dụng trong bao nhiêu Exam
-SELECT Q.Content, COUNT(EQ.QuestionID) AS 'SO LUONG'
-FROM Question Q
-LEFT JOIN ExamQuestion EQ ON EQ.QuestionID = Q.QuestionID
-GROUP BY Q.QuestionID
-ORDER BY EQ.ExamID ASC;
-
--- C8. Lấy ra Question có nhiều câu trả lời nhất
-SELECT Q.`QuestionID`, Q.`Content`, count(A.`QuestionID`) FROM `Answer` A
-INNER JOIN `Question` Q ON Q.QuestionID = A.QuestionID
-GROUP BY A.`QuestionID`
-HAVING count(A.QuestionID) = (SELECT max(countQues) FROM
-(SELECT count(B.QuestionID) AS countQues FROM answer B
-GROUP BY B.QuestionID) AS countAnsw);
-
-
--- C9. Thống kê số lượng account trong mỗi group
-
--- C10. Tìm chức vụ có ít người nhất
-
-
--- C11. Thống kê mỗi phòng ban có bao nhiêu dev, test, scrum master, PM
-    SELECT 
-    d.DepartmentID,
-    d.DepartmentName,
-    p.PositionName,
-    COUNT(p.PositionName) AS count_position
-FROM
-    `account` a
-        JOIN
-    department d ON a.DepartmentID = d.DepartmentID
-        JOIN
-    position p ON a.PositionID = p.PositionID
-GROUP BY d.DepartmentID , p.PositionID
-order by DepartmentID;
-
--- C12. Lấy thông tin chi tiết của câu hỏi bao gồm: thông tin cơ bản của 
--- question, loại câu hỏi, ai là người tạo ra câu hỏi, câu trả lời là gì, ...
-    
--- C13. Lấy ra số lượng câu hỏi của mỗi loại tự luận hay trắc nghiệm
-  
--- C14. Lấy ra group không có account nào 
-  
--- C15. Lấy ra group không có account nào
-
--- C16. Lấy ra question không có answer nào 
     
     
     
@@ -368,7 +284,7 @@ VALUES (1,1),
 									(4,7),
 									(5,10);
  -- End AS 2      
- 
+ /*
  --  AS 3 --
  
  -- 1. Lấy all Department
@@ -419,7 +335,7 @@ where `FullName` LIKE 'D%o' ;
  
  SET SQL_SAFE_UPDATES = 0;
  delete from `Exam` where (`CreateDate` < '2019-12-20');
-/* Chua lam dc cau nay*/
+
 
 -- 12. Xoa tat ca cac Question bat dau = Cau hoi
 SET SQL_SAFE_UPDATES = 0;
@@ -436,3 +352,178 @@ SET SQL_SAFE_UPDATES = 0;
 update `GroupAccount`
 set `GroupID` = 4
 where `AccountID` = 5;
+
+*/
+
+
+
+-- ASM 4
+    
+    -- C1. Viết lệnh để lấy ra danh sách nhân viên và thông tin phòng ban của họ
+    select `Fullname`, A.DepartmentID, D.DepartmentID,`DepartmentName`
+    from `Account` A left join `Department` D on A.DepartmentID = D.DepartmentID;
+    
+    -- C2. Viết lệnh để lấy ra thông tin các account được tạo sau ngày 20/12/2010
+    select * from `Account` where CreateDate > '2020-12-20'; 
+
+-- C3. Viết lệnh để lấy ra tất cả các developer
+ select `Fullname`, A.PositionID, P.PositionID, `PositionName`
+ from `Account` A inner join `Position` P on `PositionName` like 'Dev%';
+ 
+ -- C4. Viết lệnh để lấy ra danh sách các phòng ban có >3 nhân viên
+ select D.DepartmentID, D.DepartmentName, COUNT(*) as SoLuong
+from `Department` D join `Account` A on D.DepartmentID = A.DepartmentID
+group by D.DepartmentID
+having SoLuong > 3;
+ 
+ -- C5. Viết lệnh để lấy ra danh sách câu hỏi được sử dụng trong đề thi nhiều nhat
+ select  E.`QuestionID`,Q.`Content`  from `ExamQuestion` E
+inner join `Question` Q on Q.`QuestionID` = E.`QuestionID`
+group by E.`QuestionID` 
+having count(E.QuestionID) = (select MAX(demCauHoi) as cauHoiNhieuNhat from (
+select count(E.QuestionID) as demCauHoi from `Examquestion` E
+group by E.QuestionID) as Dem);
+
+
+-- C6. Thông kê mỗi category Question được sử dụng trong bao nhiêu Question
+select CQ.`CategoryID`, CQ.`CategoryName`, count(Q.`CategoryID`) from `CategoryQuestion` CQ
+join `Question` Q on CQ.`CategoryID` = Q.`CategoryID`
+group by Q.`CategoryID`;
+ 
+ -- C7. Thông kê mỗi Question được sử dụng trong bao nhiêu Exam
+select Q.`Content`, COUNT(EQ.`QuestionID`) as SoLuong
+from `Question` Q
+left join `ExamQuestion` EQ on EQ.`QuestionID` = Q.`QuestionID`
+group by Q.`QuestionID`
+order by EQ.`ExamID` asc;
+
+-- C8. Lấy ra Question có nhiều câu trả lời nhất
+select Q.`QuestionID`, Q.`Content`, count(A.`QuestionID`) from `Answer` A
+inner join `Question` Q on Q.QuestionID = A.QuestionID
+group by A.`QuestionID`
+HAVING count(A.`QuestionID`) =
+ (
+ select max(countQues)
+ from
+(
+select count(B.`QuestionID`) as countQues from answer B
+group by B.`QuestionID`
+) 
+as countAnsw
+);
+
+
+-- C9. Thống kê số lượng account trong mỗi group
+select G.GroupID, count(GA.AccountID) as SoLuong
+from GroupAccount GA
+join `Group` G on GA.GroupID = G.GroupID
+group by G.GroupID
+order by G.GroupID ;
+
+
+
+-- C10. Tìm chức vụ có ít người nhất
+select  P.`PositionID`, PositionName,count(A.`PositionID`) as soLuong
+  from `Account` A
+inner join `Position` P on A.`PositionID` = P.`PositionID`
+group by A.`PositionID` 
+having count(A.PositionID) =(select min(minPst)
+ from (select count(A.PositionID) as minPst from `Account` A
+group by A.PositionID) as minAP
+); 
+
+-- C11. Thống kê mỗi phòng ban có bao nhiêu dev, test, scrum master, PM
+    select 
+    d.DepartmentID,
+    d.DepartmentName,
+    p.PositionName,
+    count(p.PositionName) as count_position
+from
+    `account` a
+        join
+    department d on a.DepartmentID = d.DepartmentID
+        join
+    position p on a.PositionID = p.PositionID
+group by d.DepartmentID , p.PositionID
+order by DepartmentID;
+
+-- copy 
+
+-- C12. Lấy thông tin chi tiết của câu hỏi bao gồm: thông tin cơ bản của 
+-- question, loại câu hỏi, ai là người tạo ra câu hỏi, câu trả lời là gì, ...
+    SELECT Q.QuestionID, Q.Content, A.FullName, TQ.TypeName AS Author, ANS.Content FROM question Q
+INNER JOIN categoryquestion CQ ON Q.CategoryID = CQ.CategoryID
+INNER JOIN typequestion TQ ON Q.TypeID = TQ.TypeID
+INNER JOIN account A ON A.AccountID = Q.CreatorID
+INNER JOIN Answer AS ANS ON Q.QuestionID = ANS.QuestionID
+ORDER BY Q.QuestionID ASC;
+-- C13. Lấy ra số lượng câu hỏi của mỗi loại tự luận hay trắc nghiệm
+  SELECT TQ.TypeID, TQ.TypeName, COUNT(Q.TypeID) AS SL FROM question Q
+INNER JOIN typequestion TQ ON Q.TypeID = TQ.TypeID
+GROUP BY Q.TypeID;
+
+-- C14. Lấy ra group không có account nào 
+  SELECT * FROM `group` g
+LEFT JOIN groupaccount ga ON g.GroupID = ga.GroupID
+WHERE GA.AccountID IS NULL;
+
+-- C15. Lấy ra group không có account nào
+SELECT *
+FROM `Group`
+WHERE GroupID NOT IN (SELECT GroupID
+
+FROM GroupAccount);
+
+-- C16. Lấy ra question không có answer nào 
+    SELECT *
+FROM Question
+WHERE QuestionID NOT IN (SELECT QuestionID
+
+From Answer);
+-- C17. 
+-- a) Lấy các account thuộc nhóm thứ 1
+SELECT A.FullName FROM `Account` A
+JOIN GroupAccount GA ON A.AccountID = GA.AccountID
+WHERE GA.GroupID = 1;
+-- b) Lấy các account thuộc nhóm thứ 2
+SELECT A.FullName FROM `Account` A
+JOIN GroupAccount GA ON A.AccountID = GA.AccountID
+WHERE GA.GroupID = 2;
+-- c) Ghép 2 kết quả từ câu a) và câu b) sao cho không có record nào trùng nhau 
+SELECT A.FullName
+FROM `Account` A
+JOIN GroupAccount GA ON A.AccountID = GA.AccountID
+WHERE GA.GroupID = 1
+UNION
+SELECT A.FullName
+FROM `Account` A
+JOIN GroupAccount GA ON A.AccountID = GA.AccountID
+WHERE GA.GroupID = 2;
+
+-- C18 
+-- a) Lấy các group có lớn hơn 5 thành viên
+SELECT g.GroupName, COUNT(ga.GroupID) AS SL
+FROM GroupAccount ga
+JOIN `Group` g ON ga.GroupID = g.GroupID
+GROUP BY g.GroupID
+HAVING COUNT(ga.GroupID) >= 5;
+-- b) Lấy các group có nhỏ hơn 7 thành viên
+SELECT g.GroupName, COUNT(ga.GroupID) AS SL
+FROM GroupAccount ga
+JOIN `Group` g ON ga.GroupID = g.GroupID
+GROUP BY g.GroupID
+HAVING COUNT(ga.GroupID) <= 7;
+-- c) Ghép 2 kết quả từ câu a) và câu b)
+SELECT g.GroupName, COUNT(ga.GroupID) AS SL
+FROM GroupAccount ga
+JOIN `Group` g ON ga.GroupID = g.GroupID
+GROUP BY g.GroupID
+HAVING COUNT(ga.GroupID) >= 5
+UNION
+SELECT g.GroupName, COUNT(ga.GroupID) AS SL
+FROM GroupAccount ga
+JOIN `Group` g ON ga.GroupID = g.GroupID
+GROUP BY g.GroupID
+HAVING COUNT(ga.GroupID) <= 7;
+
+
