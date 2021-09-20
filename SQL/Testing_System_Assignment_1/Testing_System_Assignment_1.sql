@@ -26,10 +26,10 @@ create table if not exists `Account`
     `Fullname`			varchar(50),
     `DepartmentID` 		tinyint default 0,
     `PositionID`	 	tinyint,
-    `CreateDate` 		datetime
+    `CreateDate` 		datetime,
     
-   -- constraint fk_dpm_id foreign key (`DepartmentID`) references `Department` (`DepartmentID`),
-   -- constraint fk_pst_id foreign key (`PositionID`) references `Position` (`PositionID`),
+    constraint fk_dpm_id foreign key (`DepartmentID`) references `Department` (`DepartmentID`),
+    constraint fk_pst_id foreign key (`PositionID`) references `Position` (`PositionID`)
     
     );
     
@@ -123,12 +123,15 @@ order by DepartmentID;
 drop table if exists `Group`;
 create table if not exists `Group`
 (
-	`GroupID` 		mediumint primary key auto_increment not null,
+	`GroupID` 		mediumint  auto_increment not null,
     `GroupName` 	varchar(50) not null,
     `CreatorID`		mediumint not null,
-    `CreateDate` 	datetime
+    `CreateDate` 	datetime,
     
-    
+    PRIMARY KEY (`GroupID`),
+	CONSTRAINT fk_gr_acc
+	FOREIGN KEY (`CreatorID`)
+	REFERENCES `account`(`AccountID`)
     
     );
     
@@ -193,7 +196,7 @@ create table if not exists `Exam`
     `Code`			varchar(50) not null,
     `Title`			varchar(50) not null,
     `CategoryID`	tinyint,
-    `Duration`		tinyint,
+    `Duration`		float,
     `CreatorID`		mediumint,
     `CreateDate`	datetime,
     
@@ -223,16 +226,16 @@ references `Exam` (`ExamID`) ON DELETE CASCADE,
  -- AS 2
  
 INSERT INTO `Department`(`DepartmentID`,`DepartmentName`)
-VALUES ('1','Phong Ky Thuat 1'),
-       ('2','Phong Ky Thuat 2'),
-       ('3','Phong Dev 1'),
-       ('4','Phong Dev 2'),
-       ('5','Phong Sale'),
-       ('6','Phong Marketing'),
-       ('7','Phong Giam Doc'),
-       ('8','Phong Noi Vu'),
-       ('9','Phong PR'),
-       ('10','Phong HR');
+VALUES (1,'Phong Ky Thuat 1'),
+       (2,'Phong Ky Thuat 2'),
+       (3,'Phong Dev 1'),
+       (4,'Phong Dev 2'),
+       (5,'Phong Sale'),
+       (6,'Phong Marketing'),
+       (7,'Phong Giam Doc'),
+       (8,'Phong Noi Vu'),
+       (9,'Phong PR'),
+       (10,'Phong HR');
        
        
 
@@ -241,116 +244,116 @@ ALTER TABLE `Position`
     MODIFY COLUMN `PositionName` ENUM ('Dev1', 'Dev2', 'PM', 'Leader', 'Scrum Master' , 'Test');
 
 INSERT INTO `Position`(`PositionID`,`PositionName`)
-VALUES ('1','Dev1'),
-       ('2','Dev2'),
-       ('3','Test'),
-       ('4','PM'),
-       ('5','Leader'),
-       ('6','Scrum Master');
+VALUES (1,'Dev1'),
+       (2,'Dev2'),
+       (3,'Test'),
+       (4,'PM'),
+       (5,'Leader'),
+       (6,'Scrum Master');
 
 
 /* INSERT DATA bang Account */
 INSERT INTO `Account`(`AccountID`,`Email`, `Username`, `Fullname`, `DepartmentID`, `PositionID`, `CreateDate`)
-VALUES ('1','maxmad1@gmai.com', 'dtm', 'Doan Thi Mo', 1, 1, '2019-12-01'),
-       ('2','maxmad2@gmai.com', 'thl', 'Dinh Hoai Dao', 1, 2, '2020-12-01'),
-       ('3','maxmad3@gmai.com', 'lmq', 'Le Minh Quang', 1, 1, '2020-07-01'),
-       ('4','maxmad4@gmai.com', 'ldh', 'Le Dang Hoang', 1, 2, '2019-09-01'),
-       ('5','maxmad5@gmai.com', 'dvd', 'Do Van Dung', 3, 2, '2021-07-01'),
-       ('6','maxmad6@gmai.com', 'das', 'Do Anh Son', 3, 1, NOW()),
-       ('7','maxmad7@gmai.com', 'nnh', 'Nguyen Ngoc Hoang', 3, 3, '2020-10-01'),
-       ('8','maxmad8@gmai.com', 'bdt', 'Bui Duc Toan', 3, 4, '2019-04-01'),
-       ('9','maxmad9@gmai.com', 'tkt', 'Tran Kim Tuyen', 2, 1, NOW()),
-       ('10','maxmad10@gmai.com', 'ldsm', 'Le Dang Sao Mai', 1, 5, '2019-10-01'),
-       ('11','maxmad11@gmai.com', 'ntpl', 'Nguyen Thi Phuong Lan', 1, 3, '2020-12-01');
+VALUES (1,'maxmad1@gmai.com', 'dtm', 'Doan Thi Mo', 1, 1, '2019-12-01'),
+       (2,'maxmad2@gmai.com', 'thl', 'Dinh Hoai Dao', 1, 2, '2020-12-01'),
+       (3,'maxmad3@gmai.com', 'lmq', 'Le Minh Quang', 1, 1, '2020-07-01'),
+       (4,'maxmad4@gmai.com', 'ldh', 'Le Dang Hoang', 1, 2, '2019-09-01'),
+       (5,'maxmad5@gmai.com', 'dvd', 'Do Van Dung', 3, 2, '2021-07-01'),
+       (6,'maxmad6@gmai.com', 'das', 'Do Anh Son', 3, 1, NOW()),
+       (7,'maxmad7@gmai.com', 'nnh', 'Nguyen Ngoc Hoang', 3, 3, '2020-10-01'),
+       (8,'maxmad8@gmai.com', 'bdt', 'Bui Duc Toan', 3, 4, '2019-04-01'),
+       (9,'maxmad9@gmai.com', 'tkt', 'Tran Kim Tuyen', 2, 1, NOW()),
+       (10,'maxmad10@gmai.com', 'ldsm', 'Le Dang Sao Mai', 5, 5, '2019-10-01'),
+       (11,'maxmad11@gmai.com', 'ntpl', 'Nguyen Thi Phuong Lan', 1, 3, '2020-12-01');
 
 /* INSERT DATA bang Group */
 INSERT INTO `Group`(`GroupID`,`GroupName`, `CreatorID`, `CreateDate`)
-VALUES ('1','Nhom 1', '3', '2021-04-03'),
-       ('2','Nhom 2', '3', '2019-01-03'),
-       ('3','Nhom 3', '2', '2020-04-03'),
-       ('4','Nhom 4', '1', NOW()),
-       ('5','Nhom 5', '3', '2021-06-03'),
-       ('6','Nhom 6', '1', '2020-04-03'),
-       ('7','Nhom 7', '5', '2021-04-03'),
-       ('8','Nhom 8', '5', '2019-05-03'),
-       ('9','Nhom 9', '3', '2019-01-03'),
-       ('10','Nhom 10', '1', NOW());
+VALUES (1,'Nhom 1', 3, '2021-04-03'),
+       (2,'Nhom 2', 3, '2019-01-03'),
+       (3,'Nhom 3', 2, '2020-04-03'),
+       (4,'Nhom 4', 1, NOW()),
+       (5,'Nhom 5', 3, '2021-06-03'),
+       (6,'Nhom 6', 1, '2020-04-03'),
+       (7,'Nhom 7', 5, '2021-04-03'),
+       (8,'Nhom 8', 5, '2019-05-03'),
+       (9,'Nhom 9', 3, '2019-01-03'),
+       (10,'Nhom 10', 1, NOW());
 
 /* INSERT DATA bang GroupAccount */
 INSERT INTO `GroupAccount`(`GroupID`, `AccountID`, `JoinDate`)
-VALUES ('1', '1', '2021-07-01'),
-       ('2', '3', '2020-01-01'),
-       ('1', '2', NOW()),
-       ('1', '4', '2021-07-01'),
-       ('2', '1', '2021-06-01'),
-       ('2', '10', '2019-05-01'),
-       ('5', '1', '2021-06-01'),
-       ('5', '3', '2020-01-01'),
-       ('5', '4', '2021-07-01'),
-       ('3', '1', '2021-06-01'),
-       ('9', '2', '2021-06-01'),
+VALUES (1, 1, '2021-07-01'),
+       (2, 3, '2020-01-01'),
+       (1, 2, NOW()),
+       (1, 4, '2021-07-01'),
+       (2, 1, '2021-06-01'),
+       (2, 10, '2019-05-01'),
+       (5, 1, '2021-06-01'),
+       (5, 3, '2020-01-01'),
+       (5, 4, '2021-07-01'),
+       (3, 1, '2021-06-01'),
+       (9, 2, '2021-06-01'),
        ('10', '1', NOW());
 
 /* INSERT DATA bang TypeQuestion */
-INSERT INTO `TypeQuestion`(`TypeName`)
-VALUES ('Trac nghiem'),
-       ('Tu Luan');
+INSERT INTO `TypeQuestion`(`TypeID`,`TypeName`)
+VALUES (1,'Trac nghiem'),
+       (2,'Tu Luan');
 
 /* INSERT DATA bang CategoryQuestion */
 INSERT INTO `CategoryQuestion` (`CategoryID`,`CategoryName`)
-VALUES ('1','Java'),
-       ('2','SQL'),
-       ('3','HTML'),
-       ('4','CSS '),
-       ('5','.NET'),
-       ('6','Python'),
-       ('7','Ruby'),
-       ('8','JavaScript');
+VALUES (1,'Java'),
+       (2,'SQL'),
+       (3,'HTML'),
+       (4,'CSS '),
+       (5,'.NET'),
+       (6,'Python'),
+       (7,'Ruby'),
+       (8,'JavaScript');
 
 
 
 INSERT INTO `Question`(`QuestionID`,`Content`,`CategoryID`, `TypeID`, `CreatorID`, `CreateDate`)
-VALUES ('1','Câu hỏi SQL 1', 2, 2, 1, '2021-04-01'),
-       ('2','Câu hỏi SQL 2', 2, 2, 2, '2020-01-01'),
-       ('3','Câu hỏi JAVA 1', 1, 1, 10, '2021-07-01'),
-       ('4','Câu hỏi JAVA 2', 1, 2, 5, '2021-06-01'),
-       ('5','Câu hỏi HTML 1', 3, 1, 2, NOW()),
-       ('6','Câu hỏi HTML 2', 3, 2, 2, NOW()),
-       ('7','Câu hỏi C# 1', 3, 1, 2, NOW()),
-       ('8','Câu hỏi C++ 1', 3, 1, 2, NOW()),
-       ('9','Câu hỏi abc 1', 3, 1, 2, NOW()),
+VALUES (1,'Câu hỏi SQL 1', 2, 2, 1, '2021-04-01'),
+       (2,'Câu hỏi SQL 2', 2, 2, 2, '2020-01-01'),
+       (3,'Câu hỏi JAVA 1', 1, 1, 10, '2021-07-01'),
+       (4,'Câu hỏi JAVA 2', 1, 2, 5, '2021-06-01'),
+       (5,'Câu hỏi HTML 1', 3, 1, 2, NOW()),
+       (6,'Câu hỏi HTML 2', 3, 2, 2, NOW()),
+       (7,'Câu hỏi C# 1', 3, 1, 2, NOW()),
+       (8,'Câu hỏi C++ 1', 3, 1, 2, NOW()),
+       (9,'Câu hỏi abc 1', 3, 1, 2, NOW()),
        ('10','Câu hỏi xyz 1', 3, 1, 2, NOW());
 
 
 /* INSERT DATA bang Answer */
-INSERT INTO `Answer` (`Content`, `QuestionID`, `isCorrect`)
-VALUES ('Câu trả lời 1 - question SQL 1', 1, 1),
-       ('Câu trả lời 2 - question SQL 1', 1, 0),
-       ('Câu trả lời 3 - question SQL 1', 1, 0),
-       ('Câu trả lời 4 - question SQL 1', 1, 1),
-       ('Câu trả lời 1 - question SQL 2', 2, 0),
-       ('Câu trả lời 2 - question SQL 2', 2, 0),
-       ('Câu trả lời 3 - question SQL 2', 2, 0),
-       ('Câu trả lời 4 - question SQL 2', 2, 1),
-       ('Câu trả lời 1 - question JAVA 1', 3, 0),
-       ('Câu trả lời 2 - question JAVA 1', 3, 1),
-       ('Câu trả lời 1 - question JAVA 2', 4, 0),
-       ('Câu trả lời 2 - question JAVA 2', 4, 0),
-       ('Câu trả lời 3 - question JAVA 2', 4, 0),
-       ('Câu trả lời 4 - question JAVA 2', 4, 1),
-       ('Câu trả lời 1 - question HTML 1', 5, 1),
-       ('Câu trả lời 2 - question HTML 2', 5, 0);
+INSERT INTO `Answer` (`AnswerID`,`Content`, `QuestionID`, `isCorrect`)
+VALUES (1,'Câu trả lời 1 - question SQL 1', 1, 1),
+       (2,'Câu trả lời 2 - question SQL 1', 1, 0),
+       (3,'Câu trả lời 3 - question SQL 1', 1, 0),
+       (4,'Câu trả lời 4 - question SQL 1', 1, 1),
+       (5,'Câu trả lời 1 - question SQL 2', 2, 0),
+       (6,'Câu trả lời 2 - question SQL 2', 2, 0),
+       (7,'Câu trả lời 3 - question SQL 2', 2, 0),
+       (8,'Câu trả lời 4 - question SQL 2', 2, 1),
+       (9,'Câu trả lời 1 - question JAVA 1', 3, 0),
+       (10,'Câu trả lời 2 - question JAVA 1', 3, 1),
+       (11,'Câu trả lời 1 - question JAVA 2', 4, 0),
+       (12,'Câu trả lời 2 - question JAVA 2', 4, 0),
+       (13,'Câu trả lời 3 - question JAVA 2', 4, 0),
+       (14,'Câu trả lời 4 - question JAVA 2', 4, 1),
+       (15,'Câu trả lời 1 - question HTML 1', 5, 1),
+       (16,'Câu trả lời 2 - question HTML 2', 5, 0);
 
 
 /* INSERT DATA bang Exam */
-INSERT INTO `Exam`(`Code`, `Title`, `CategoryID`, `Duration`, `CreatorID`, `CreateDate`)
-VALUES ('MS_01', 'De thi 01', 1, 90, 1, NOW()),
-       ('MS_02', 'De thi 02', 1, 60, 5, NOW()),
-       ('MS_03', 'De thi 03', 2, 60, 9, NOW()),
-       ('MS_04', 'De thi 04', 2, 90, 1, NOW()),
-       ('MS_05', 'De thi 05', 1, 60, 2, NOW()),
-       ('MS_06', 'De thi 06', 2, 90, 2, NOW()),
-       ('MS_07', 'De thi 07', 1, 60, 1, NOW());
+INSERT INTO `Exam`(`ExamID`,`Code`, `Title`, `CategoryID`, `Duration`, `CreatorID`, `CreateDate`)
+VALUES (1,'MS_01', 'De thi 01', 1, 90, 1, NOW()),
+       (2,'MS_02', 'De thi 02', 1, 60, 5, NOW()),
+       (3,'MS_03', 'De thi 03', 2, 60, 9, NOW()),
+       (4,'MS_04', 'De thi 04', 2, 90, 1, NOW()),
+       (5,'MS_05', 'De thi 05', 1, 60, 2, NOW()),
+       (6,'MS_06', 'De thi 06', 2, 90, 2, NOW()),
+       (7,'MS_07', 'De thi 07', 1, 60, 1, NOW());
 
 /* INSERT DATA bang Examquestion */
 INSERT INTO `ExamQuestion`
