@@ -358,7 +358,7 @@ where `AccountID` = 5;
 
 
 -- ASM 4
-    
+    /*
     -- C1. Viết lệnh để lấy ra danh sách nhân viên và thông tin phòng ban của họ
     select `Fullname`, A.DepartmentID, D.DepartmentID,`DepartmentName`
     from `Account` A left join `Department` D on A.DepartmentID = D.DepartmentID;
@@ -447,8 +447,6 @@ from
 group by d.DepartmentID , p.PositionID
 order by DepartmentID;
 
--- copy 
-
 -- C12. Lấy thông tin chi tiết của câu hỏi bao gồm: thông tin cơ bản của 
 -- question, loại câu hỏi, ai là người tạo ra câu hỏi, câu trả lời là gì, ...
     SELECT Q.QuestionID, Q.Content, A.FullName, TQ.TypeName AS Author, ANS.Content FROM question Q
@@ -525,5 +523,281 @@ FROM GroupAccount ga
 JOIN `Group` g ON ga.GroupID = g.GroupID
 GROUP BY g.GroupID
 HAVING COUNT(ga.GroupID) <= 7;
+*/
 
 
+-- ASM 5
+ use Testing_System_Assignment_1;
+-- C1. Tạo view có chứa danh sách nhân viên thuộc phòng ban sale Sử dụng VIEW
+
+-- View
+CREATE OR REPLACE VIEW vw_DSNV_Sale AS
+SELECT A.*, D.DepartmentName
+FROM account A
+INNER JOIN department D ON A.DepartmentID = D.DepartmentID
+WHERE D.DepartmentName = 'Phong Sale';
+SELECT * FROM vw_DSNV_Sale;
+
+-- CTE
+WITH DSNV_Sale AS(
+SELECT A.*, D.DepartmentName
+FROM account A
+INNER JOIN department D ON A.DepartmentID = D.DepartmentID
+WHERE D.DepartmentName = 'Phong Sale'
+)
+SELECT *
+FROM DSNV_Sale;
+
+-- C2. Tạo view có chứa thông tin các account tham gia vào nhiều group nhất
+
+CREATE OR REPLACE VIEW vw_GetAccount AS
+WITH CTE_GetListCountAccount AS(
+SELECT count(GA1.AccountID) AS countGA1 FROM groupaccount GA1
+GROUP BY GA1.AccountID
+)
+SELECT A.AccountID, A.Username, count(GA.AccountID) AS SL FROM groupaccount GA
+INNER JOIN account A ON GA.AccountID = A.AccountID
+GROUP BY GA.AccountID
+HAVING count(GA.AccountID) = (
+SELECT MAX(countGA1) AS maxCount FROM CTE_GetListCountAccount
+);
+SELECT * FROM vw_GetAccount;
+
+-- C3. Tạo view có chứa câu hỏi có những content quá dài (content quá 300 từ được coi là quá dài) và xóa nó đi
+
+CREATE OR REPLACE VIEW vw_ContenTren18Tu
+AS
+SELECT *
+FROM Question
+WHERE LENGTH(Content) > 18;
+SELECT *
+FROM vw_ContenTren18Tu;
+
+-- C4. Tạo view có chứa danh sách các phòng ban có nhiều nhân viên nhất
+
+CREATE OR REPLACE VIEW vw_MaxNV
+AS
+SELECT D.DepartmentName, count(A.DepartmentID) AS SL
+FROM account A
+INNER JOIN `department` D ON D.DepartmentID = A.DepartmentID
+GROUP BY A.DepartmentID
+HAVING count(A.DepartmentID) = (SELECT MAX(countDEP_ID) AS maxDEP_ID FROM
+(SELECT count(A1.DepartmentID) AS countDEP_ID FROM account A1
+GROUP BY A1.DepartmentID) AS TB_countDepID);
+SELECT * FROM vw_MaxNV;
+
+-- CTE
+CREATE OR REPLACE VIEW vw_MaxNV AS
+WITH CTE_Count_NV AS(
+SELECT count(A1.DepartmentID) AS countDEP_ID FROM account A1
+GROUP BY A1.DepartmentID)
+SELECT D.DepartmentName, count(A.DepartmentID) AS SL
+FROM account A
+INNER JOIN `department` D ON D.DepartmentID = A.DepartmentID
+GROUP BY A.DepartmentID
+HAVING count(A.DepartmentID) = (SELECT max(countDEP_ID) FROM CTE_Count_NV);
+SELECT * FROM vw_MaxNV;
+
+-- C5. Tạo view có chứa tất các các câu hỏi do user họ Nguyễn tạo
+
+CREATE OR REPLACE VIEW vw_Que5
+AS
+SELECT Q.CategoryID, Q.Content, A.FullName AS Creator FROM question Q
+INNER JOIN `account` A ON A.AccountID = Q.CreatorID
+WHERE SUBSTRING_INDEX( A.FullName, ' ', 1 ) = 'Nguyễn';
+SELECT * FROM vw_Que5;
+
+-- CTE
+WITH cte_Que5 AS(
+SELECT Q.CategoryID, Q.Content, A.FullName AS Creator FROM question Q
+INNER JOIN `account` A ON A.AccountID = Q.CreatorID
+WHERE SUBSTRING_INDEX( A.FullName, ' ', 1 ) = 'Nguyễn'
+)
+SELECT * FROM cte_Que5;
+
+
+
+
+
+
+
+-- ASM 6
+
+use Testing_System_Assignment_1;
+
+-- C1. Tạo store để người dùng nhập vào tên phòng ban và in ra tất cả các account thuộc phòng ban đó
+
+DROP PROCEDURE IF EXISTS printAccByDpName;
+ DELIMITER $$
+	CREATE PROCEDURE printAccByDpName(IN dpName VARCHAR(50))
+    BEGIN
+		select * from `Account` A join `Department` D
+         on A.`DepartmentID` = D.`DepartmentID`
+     WHERE				 D.`DepartmentNAME` = dpName;
+
+    END$$
+ DELIMITER ;
+
+call printAccByDpName ('Phong Ky Thuat 1');
+
+-- C2. Tạo store để in ra số lượng account trong mỗi group
+
+DROP PROCEDURE IF EXISTS sp_GetCountAccFromGroup;
+DELIMITER $$
+CREATE PROCEDURE sp_GetCountAccFromGroup(IN in_group_name NVARCHAR(50))
+BEGIN
+SELECT g.GroupName, count(ga.AccountID) AS SL FROM groupaccount ga
+INNER JOIN `group` g ON ga.GroupID = g.GroupID
+WHERE g.GroupName = in_group_name;
+END$$
+DELIMITER ;
+Call sp_GetCountAccFromGroup('Nhom 1');
+
+-- C3. Tạo store để thống kê mỗi type question có bao nhiêu question được tạo trong tháng hiện tại
+
+DROP PROCEDURE IF EXISTS sp_GetCountTypeInMonth;
+DELIMITER $$
+CREATE PROCEDURE sp_GetCountTypeInMonth()
+BEGIN
+SELECT tq.TypeName, count(q.TypeID) FROM question q
+INNER JOIN typequestion tq ON q.TypeID = tq.TypeID
+WHERE month(q.CreateDate) = month(now()) AND year(q.CreateDate) = year(now())
+GROUP BY q.TypeID;
+END$$
+DELIMITER ;
+Call sp_GetCountTypeInMonth();
+
+
+
+--  C4. Tạo store để trả ra id của type question có nhiều câu hỏi nhất
+
+DROP PROCEDURE IF EXISTS getMostQs;
+ DELIMITER $$
+	CREATE PROCEDURE getMostQs (IN typeQs  VARCHAR(50))
+    BEGIN
+		select Q.`TypeID`, count(T.`TypeID`) from `Question` Q
+inner join `TypeQuestion` T on Q.TypeID = T.TypeID
+group by T.`TypeID`
+HAVING count(T.`TypeID`) =
+ (
+ select max(countQues)
+ from
+(
+select count(T.`TypeID`) as countQues from `Question` Q
+group by T.`TypeID`
+) 
+as countAnsw
+);
+
+    END$$
+ DELIMITER ;
+
+Call getMostQs (1);
+
+call printAccByDpName ('Phong Ky Thuat 1');
+
+
+/* CREATE OR REPLACE VIEW v_type_questions AS(
+			SELECT typeID, Count(*) AS total FROM question q JOIN TypeQuestion tq USING(TypeID) GROUP BY TypeID
+		);
+SELECT * FROM v_questions;
+
+DELIMITER $$
+CREATE PROCEDURE pr_id_maxCQ(OUT IDQ INT)
+BEGIN
+		
+	   SELECT `TypeID` INTO IDQ
+       FROM	v_type_questions WHERE total = (SELECT MAX(total) FROM v_type_questions);
+
+END $$
+DELIMITER ;
+
+CALL pr_id_maxCQ(@FF);
+SELECT @FF;
+
+*/
+
+-- Sửa lỗi Function SET GLOBAL log_bin_trust_function_creators = 1;
+-- Cách là bằng Function
+/*
+CREATE OR REPLACE VIEW v_type_questions AS(
+			SELECT typeID, Count(*) AS total FROM question q JOIN TypeQuestion tq USING(TypeID) GROUP BY TypeID
+		);
+DELIMITER $$
+
+-- sql error 1418
+-- SET GLOBAL log_bin_trust_function_creators = 1;
+CREATE FUNCTION f_id_maxCQ() RETURNS INT
+BEGIN
+	   DECLARE IDQ INT;
+	   SELECT `TypeID` INTO IDQ
+       FROM	v_type_questions WHERE total = (SELECT MAX(total) FROM v_type_questions) ;
+       RETURN IDQ;
+END $$
+DELIMITER ;
+
+SELECT * FROM TypeQuestion WHERE TypeID = (SELECT f_id_maxCQ());
+*/
+
+-- C5. Sử dụng store ở question 4 để tìm ra tên của type question
+
+
+
+
+-- C13 
+delimiter $$
+	CREATE PROCEDURE question_in_6month()
+    BEGIN
+		with cte_6month as
+        (
+			SELECT month(now()) as m , year(now()) as y
+            union
+			SELECT month(date_sub(now(), interval 1 month)), year(date_sub(now(), interval 1 month)) as y
+            union
+			SELECT month(date_sub(now(), interval 2 month)), year(date_sub(now(), interval 2 month)) as y
+            union
+			SELECT month(date_sub(now(), interval 3 month)), year(date_sub(now(), interval 3 month)) as y
+            union
+			SELECT month(date_sub(now(), interval 4 month)), year(date_sub(now(), interval 4 month)) as y
+            union
+			SELECT month(date_sub(now(), interval 5 month)), year(date_sub(now(), interval 5 month)) as y
+        )
+        select m, y, if (count(questionid) = 0, 'khong co cau nao', count(questionid)) as total
+        from cte_6month
+		left join question on m = month(createdate) and y = year(createdate)
+        group by m, y;
+        
+    END$$
+delimiter ;
+
+
+/*
+DROP TRIGGER IF EXISTS tgInsertQuestion;
+DELIMITER $$
+	CREATE TRIGGER tgInsertQuestion
+    BEFORE INSERT ON questtgInsertQuestionion
+    FOR EACH ROW
+    BEGIN
+		IF (NEW.CreateDate > now()) THEN
+			SIGNAL SQLSTATE '12345'
+            SET MESSAGE_TEXT = 'createDate khong dung';
+        END IF;
+    END $$
+DELIMITER ;
+    END $$
+DELIMITER ;
+*/
+/*
+DROP TRIGGER IF EXISTS tgInsertQuestion;
+DELIMITER $$
+	CREATE TRIGGER tgInsertQuestion
+    BEFORE INSERT ON Question
+    FOR EACH ROW
+    BEGIN
+		IF (NEW.CreateDate > now()) THEN
+			SIGNAL SQLSTATE '12345'
+            SET MESSAGE_TEXT = 'createDate khong dung';
+        END IF;
+    END $$
+DELIMITER ;
+*/
