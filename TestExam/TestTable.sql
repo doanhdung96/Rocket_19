@@ -77,8 +77,12 @@ value
 
 -- b)Write SQL script to list out information (Customer’s name, number of cars that customer bought) and sort ascending by number of cars.
 
- 
 
+ select cu.`Name` as 'Tên Khách Hàng' , count(cod.CustomerID) as 'Số order', sum(cod.Amount)
+ from Customer cu join caroder cod on cu.CustomerID = cod.CustomerID
+ where cod.`Status` != '2'
+ group by cod.CustomerID
+ order by sum(cod.Amount) asc;
 
 
 
